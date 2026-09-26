@@ -1,9 +1,9 @@
 {
-  "name": "desktop-habitats",
+  "name": "desktop-aquarium",
   "version": "1.1.0",
   "license": "MIT",
   "type": "module",
-  "description": "Living desktop scenes for macOS: Riverscape, a freshwater aquarium, and Reefscape, a saltwater tank.",
+  "description": "An interactive, energy-aware aquarium wallpaper for macOS, powered by Three.js and WebGL2.",
   "scripts": {
     "start": "node serve.mjs",
     "wallpaper": "sh wallpaper/install.sh",

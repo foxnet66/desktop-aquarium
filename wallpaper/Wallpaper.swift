@@ -14,14 +14,19 @@ import Cocoa
 import WebKit
 import IOKit.ps
 
-let sceneScheme = "desktop-habitats"
+let sceneScheme = "desktop-aquarium"
 let sceneHost = "local"
 
 /// The scenes the app can show, each a directory under scenes/ with a wallpaper.html.
 enum Habitat: String, CaseIterable {
   case riverscape, reefscape
 
-  var title: String { rawValue.prefix(1).uppercased() + rawValue.dropFirst() }
+  var title: String {
+    switch self {
+    case .riverscape: return "水草溪流"
+    case .reefscape: return "珊瑚海"
+    }
+  }
   var page: String { "/scenes/\(rawValue)/wallpaper.html" }
   /// What shows before the page has drawn anything, matched to each scene's own dark.
   var background: NSColor {
@@ -31,9 +36,9 @@ enum Habitat: String, CaseIterable {
     }
   }
 
-  /// Riverscape until somebody picks otherwise. The choice outlives a restart.
+  /// The coral reef is the default; a later choice outlives a restart.
   static var selected: Habitat {
-    get { UserDefaults.standard.string(forKey: "habitat").flatMap(Habitat.init) ?? .riverscape }
+    get { UserDefaults.standard.string(forKey: "habitat").flatMap(Habitat.init) ?? .reefscape }
     set { UserDefaults.standard.set(newValue.rawValue, forKey: "habitat") }
   }
 }
@@ -82,7 +87,7 @@ final class Reporter: NSObject, WKScriptMessageHandler {
   func userContentController(
     _ controller: WKUserContentController, didReceive message: WKScriptMessage
   ) {
-    NSLog("desktop-habitats page: \(message.body)")
+    NSLog("desktop-aquarium page: \(message.body)")
   }
 }
 
@@ -202,7 +207,7 @@ final class Wallpaper: NSObject, WKNavigationDelegate {
       if loaded { view.evaluateJavaScript("habitatPointerOut()") }
       inside = false
     }
-    NSLog("desktop-habitats: \(rate) fps")
+    NSLog("desktop-aquarium: \(rate) fps")
     send()
     return true
   }
@@ -253,7 +258,7 @@ final class Wallpaper: NSObject, WKNavigationDelegate {
     _ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!,
     withError error: Error
   ) {
-    NSLog("desktop-habitats: the scene did not load: \(error.localizedDescription)")
+    NSLog("desktop-aquarium: the scene did not load: \(error.localizedDescription)")
   }
 
   /// What the page thinks it is doing, for the log.
@@ -274,7 +279,7 @@ final class Wallpaper: NSObject, WKNavigationDelegate {
       })()
       """
     ) { value, error in
-      NSLog("desktop-habitats page state: \(value ?? error?.localizedDescription ?? "unreadable")")
+      NSLog("desktop-aquarium page state: \(value ?? error?.localizedDescription ?? "unreadable")")
     }
   }
 
@@ -287,7 +292,7 @@ final class Wallpaper: NSObject, WKNavigationDelegate {
         let png = NSBitmapImageRep(data: data)?.representation(using: .png, properties: [:])
       else { return }
       try? png.write(to: file)
-      NSLog("desktop-habitats: wrote \(file.path)")
+      NSLog("desktop-aquarium: wrote \(file.path)")
     }
   }
 }
@@ -380,7 +385,7 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
       CFRunLoopAddSource(CFRunLoopGetMain(), source, .defaultMode)
     }
 
-    // `kill -USR1` writes what the first screen is showing to /tmp/desktop-habitats.png.
+    // `kill -USR1` writes what the first screen is showing to /tmp/desktop-aquarium.png.
     signal(SIGUSR1, SIG_IGN)
     snapshots = DispatchSource.makeSignalSource(signal: SIGUSR1, queue: .main)
     snapshots?.setEventHandler { [weak self] in self?.snapshot() }
@@ -393,7 +398,7 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
     for screen in screens { screen.setRate(60) }
     DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
       first.probe()
-      first.snapshot(to: URL(fileURLWithPath: "/tmp/desktop-habitats.png")) {
+      first.snapshot(to: URL(fileURLWithPath: "/tmp/desktop-aquarium.png")) {
         self?.applyRate()
       }
     }
@@ -514,11 +519,11 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
   /// The agent's only visible piece: a fish in the menu bar that can stop the water.
   private func addMenu() {
     let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-    let symbol = NSImage(systemSymbolName: "fish", accessibilityDescription: "Desktop Habitats")
+    let symbol = NSImage(systemSymbolName: "fish", accessibilityDescription: "桌面鱼缸")
     symbol?.isTemplate = true
     item.button?.image = symbol
-    if symbol == nil { item.button?.title = "Desktop Habitats" }
-    item.button?.toolTip = "Desktop Habitats · \(habitat.title)"
+    if symbol == nil { item.button?.title = "桌面鱼缸" }
+    item.button?.toolTip = "桌面鱼缸 · \(habitat.title)"
 
     let menu = NSMenu()
     menu.delegate = self
@@ -528,7 +533,7 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
     state.isEnabled = false
     menu.addItem(state)
     menu.addItem(.separator())
-    let environments = NSMenu(title: "Environment")
+    let environments = NSMenu(title: "场景")
     environments.autoenablesItems = false
     for choice in Habitat.allCases {
       let item = NSMenuItem(title: choice.title, action: #selector(selectHabitat), keyEquivalent: "")
@@ -537,11 +542,11 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
       environments.addItem(item)
       habitatItems.append(item)
     }
-    let environment = NSMenuItem(title: "Environment", action: nil, keyEquivalent: "")
+    let environment = NSMenuItem(title: "场景", action: nil, keyEquivalent: "")
     environment.submenu = environments
     menu.addItem(environment)
     menu.addItem(.separator())
-    feed.title = "Feed"
+    feed.title = "投喂"
     feed.target = self
     feed.action = #selector(feedFish)
     menu.addItem(feed)
@@ -549,13 +554,13 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
     pause.action = #selector(togglePause)
     menu.addItem(pause)
     menu.addItem(.separator())
-    let leave = NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q")
+    let leave = NSMenuItem(title: "退出桌面鱼缸", action: #selector(quit), keyEquivalent: "q")
     leave.target = self
     menu.addItem(leave)
     item.menu = menu
     status = item
     if item.button?.window == nil || !item.isVisible {
-      NSLog("desktop-habitats: the menu bar item did not appear")
+      NSLog("desktop-aquarium: the menu bar item did not appear")
     }
   }
 
@@ -567,15 +572,15 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     state.title =
       lowPower
-      ? "Still, for Low Power Mode"
+      ? "低电量模式下已静止"
       : stopped
-        ? reduceMotion ? "Paused, for Reduce Motion" : "Paused"
+        ? reduceMotion ? "因减少动态效果而暂停" : "已暂停"
         : !awake
-          ? "Still, the screen is off"
+          ? "屏幕关闭，鱼缸已静止"
           : applied == 0
-            ? "Resting behind your windows"
-            : "Running at \(applied) frames a second"
-    pause.title = stopped ? "Resume" : "Pause"
+            ? "被窗口遮挡，鱼缸正在休息"
+            : "正在运行 · \(applied) 帧/秒"
+    pause.title = stopped ? "继续" : "暂停"
     // In Low Power Mode nothing is going to draw, so the item would be a false promise.
     // Reduce Motion is not the same case: the machine can perfectly well draw, it has
     // merely been asked not to, and Resume is how somebody says they want this one anyway.
@@ -600,7 +605,7 @@ final class Controller: NSObject, NSApplicationDelegate, NSMenuDelegate {
     else { return }
     habitat = chosen
     Habitat.selected = chosen
-    status?.button?.toolTip = "Desktop Habitats · \(chosen.title)"
+    status?.button?.toolTip = "桌面鱼缸 · \(chosen.title)"
     build()
   }
 

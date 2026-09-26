@@ -13,16 +13,16 @@ export function installControls({ habitat, isPaused, isRunning, pause, feed, qua
   const feedButton = document.querySelector('#feed');
   const select = document.querySelector('#quality');
   const fullscreenButton = document.querySelector('#fullscreen');
-  setActionIcon(feedButton, 'feed', 'Feed fish');
+  setActionIcon(feedButton, 'feed', '投喂鱼群');
   function refreshFullscreen() {
     const active = Boolean(document.fullscreenElement);
-    setActionIcon(fullscreenButton, active ? 'exit-fullscreen' : 'fullscreen', active ? 'Exit fullscreen' : 'Fullscreen', 'F');
+    setActionIcon(fullscreenButton, active ? 'exit-fullscreen' : 'fullscreen', active ? '退出全屏' : '全屏', 'F');
   }
   document.addEventListener('fullscreenchange', refreshFullscreen);
   refreshFullscreen();
   function refresh() {
     if (pauseButton) {
-      setActionIcon(pauseButton, isPaused() ? 'play' : 'pause', isPaused() ? 'Play' : 'Pause', 'Space');
+      setActionIcon(pauseButton, isPaused() ? 'play' : 'pause', isPaused() ? '继续' : '暂停', '空格');
       pauseButton.setAttribute('aria-pressed', String(isPaused()));
     }
     if (feedButton) feedButton.disabled = !isRunning();
@@ -67,9 +67,9 @@ export function reportSceneError(error) {
   const box = document.querySelector('#error');
   if (!box) return;
   box.hidden = false;
-  box.replaceChildren(document.createTextNode('The aquarium could not start. '));
+  box.replaceChildren(document.createTextNode('鱼缸未能启动。'));
   const reload = document.createElement('a');
   reload.href = location.href;
-  reload.textContent = 'Reload aquarium';
+  reload.textContent = '重新载入';
   box.append(reload);
 }

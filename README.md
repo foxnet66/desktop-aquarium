@@ -1,133 +1,57 @@
-# Desktop Habitats
+# 桌面鱼缸
 
-[![Desktop Habitats aquarium demo](docs/images/demo.gif)](docs/videos/demo.mp4)
+一个会回应你的 macOS 动态鱼缸。鱼群会避让光标、争抢食物；水草、海葵和悬浮颗粒随水流缓慢摆动。默认场景是珊瑚海，也可从菜单栏切换到水草溪流。
 
-Have you always wanted an aquarium? Now you can have it, right on your desktop :)
+场景使用 Three.js 与 WebGL2 实时渲染，所有资源均随应用打包。安装完成后无需账号或网络连接。
 
-The fish react to your cursor and compete for food, while the plants sway in a slow current. There are two environments: **Riverscape**, a planted freshwater aquarium, and **Reefscape**, a saltwater tank.
+## 立即预览
 
-![Reefscape, a saltwater tank with clownfish around an anemone](docs/images/reefscape-wide.png)
-
-The scene is rendered live with Three.js and WebGL2. Everything runs locally, with no account or internet connection needed after setup. Desktop wallpaper support is **macOS only** for now; both environments also run in a browser. The Mac app starts with Riverscape and remembers the environment you pick from its menu.
-
-## Install on Mac
-
-You need macOS 13 or newer and the Xcode command line tools. To install the tools, open Terminal and run:
-
-```sh
-xcode-select --install
-```
-
-Wait for that installation to finish. Download and unzip this repository, or clone it, then open Terminal in the project folder and run:
-
-```sh
-sh wallpaper/install.sh
-```
-
-The script builds the app for your Mac, installs it at `~/Applications/Desktop Habitats.app`, and starts it. It also adds a login item so the aquarium starts when you sign in. Allow about 20 seconds for the first frame to appear.
-
-During installation, macOS may ask whether Terminal can control System Events. This lets the installer set a still image of the aquarium as your desktop picture, underneath the animation. You can decline; the live wallpaper will still work.
-
-You don't need Node.js for the wallpaper. If you already have it, `npm run wallpaper` runs the same installer.
-
-## Use the wallpaper
-
-Click the fish icon in the menu bar:
-
-- **Environment** switches every screen between Riverscape and Reefscape and remembers your choice.
-- **Feed** drops ten pellets into each screen's tank, or eight in Reefscape. Uneaten pellets dissolve after 20–40 seconds of running simulation time in Riverscape and 36 seconds in Reefscape, measured from when they touch the water.
-- **Pause / Resume** controls the animation. Your choice is remembered across restarts.
-- **Quit** closes the app until you open it again or next sign in.
-
-Move your cursor near the fish to see them react. Desktop icons, clicks and dragging work as usual. To feed the fish, use the menu; clicking the desktop does not drop food.
-
-## FAQ
-
-### Does it work on Windows or Linux?
-
-The desktop app supports macOS only. The browser preview needs a browser with WebGL2, but there is no wallpaper installer for Windows or Linux.
-
-### Will it drain my battery?
-
-It uses more power than a still wallpaper because it renders a 3D scene. The amount depends on your Mac, screen resolution and number of displays. There isn't a measured battery-life estimate yet.
-
-Both scenes use the same quality profiles and stop rendering when paused or hidden. The wallpaper also responds to window coverage, battery power, Low Power Mode and screen sleep.
-
-With the default Balanced profile, both environments use these limits:
-
-| Desktop state | Frame rate |
-| --- | --- |
-| Clearly visible, plugged in or on battery | Up to 30 fps |
-| Mostly covered by windows | Up to 20 fps |
-| Almost entirely covered | Stopped |
-| Low Power Mode, locked screen or sleeping display | Stopped |
-
-Pause it from the menu when you want a still aquarium, or quit to close the app completely. The browser previews offer Eco, Balanced and Detail profiles; actual frame rates depend on the device and scene. Battery life has not been measured.
-
-### Does it monitor my keystrokes?
-
-No. The wallpaper does not listen to typing in other apps or record keystrokes. Both browser previews handle Space to pause or resume, F for fullscreen, and H to hide or show controls while the aquarium has focus.
-
-The wallpaper reads your cursor position so the fish can react. It also checks window positions and sizes to estimate how much of the desktop is visible. It does not capture the contents of those windows, store cursor history, or send this information anywhere.
-
-### Does it need internet access or special permissions?
-
-Once installed, the aquarium works offline. Its code, textures and Three.js library are bundled with the app. There are no analytics or external services.
-
-The app does not request Accessibility, Input Monitoring or Screen Recording access. The optional System Events prompt during installation is for changing the still desktop picture.
-
-### Why have the fish stopped moving?
-
-Open the fish menu to see the current status. The wallpaper stops when it is almost entirely covered, in Low Power Mode, and while the screen is locked or asleep.
-
-If Reduce Motion is enabled in macOS, the aquarium starts paused unless you have already saved a different choice. Choose **Resume** to animate it. Low Power Mode must be turned off before animation can resume.
-
-### Can I use multiple monitors?
-
-Yes. Each display gets its own aquarium, and **Feed** drops food on every display. Each tank renders separately, so more displays can increase power use.
-
-### Do I need to leave Terminal open?
-
-No. The installed app has its own copy of the scene and runs independently. You can close Terminal once installation finishes.
-
-### How do I update it?
-
-Download or pull the latest source, then rerun `sh wallpaper/install.sh` from the project folder. Editing the source alone does not update the installed app. If you installed the earlier Aquatica version, the installer removes its app and login item before starting Desktop Habitats. Its old still image and saved preference are left behind; the new app starts with its own preference.
-
-### How do I remove it and get my old wallpaper back?
-
-From the project folder, run:
-
-```sh
-sh wallpaper/uninstall.sh
-```
-
-Or use `npm run unwallpaper`. This stops the app, removes its login item and deletes the installed app.
-
-The still image at `~/Pictures/Desktop Habitats.png` stays behind, along with the desktop picture setting. Choose your previous wallpaper in System Settings, then delete the image if you no longer want it. The saved pause and environment preferences are also retained.
-
-## Try it in a browser
-
-With Node.js 20 or newer, run this from the project folder:
+需要 Node.js 20 或更高版本：
 
 ```sh
 npm start
 ```
 
-Open [the local preview](http://127.0.0.1:8080). There is no `npm install` step; the library is included. Use `PORT=8081 npm start` if port 8080 is busy, and Ctrl+C to stop the server.
+然后打开终端显示的本地地址。浏览器内可点击水面投喂；移动鼠标可与鱼群互动。快捷键：
 
-- Click the water to drop food.
-- Move the pointer near the fish to interact.
-- Swipe or scroll through the gallery, or use the left and right arrow keys. Open the image or name to enter a scene.
-- Use **Pause / Resume**, **Feed**, **Fullscreen** and **Hide controls** in either scene. **Show controls** brings the controls back.
-- Press **Space** to pause or resume, **F** for fullscreen, and **H** to hide or show controls while the aquarium has focus.
-- **Quality** offers Eco (20 fps), Balanced (30 fps, the default) and Detail (60 fps). The selection is shared between the two scenes and remembered. These are frame-rate caps; lower profiles also reduce rendering resolution.
+- `Space`：暂停或继续
+- `F`：进入或退出全屏
+- `H`：隐藏或显示控制栏
 
-Reduce Motion starts the preview paused. Serve the page over HTTP; opening `index.html` directly will not load its JavaScript modules. Any static server also works, such as `python3 -m http.server 8080 --bind 127.0.0.1` if you have Python installed.
+画质提供节能（20 fps）、均衡（30 fps）和精细（60 fps）三档。
 
+## 安装为 macOS 动态壁纸
 
-## Credits and license
+要求 macOS 13 或更高版本，以及 Xcode Command Line Tools：
 
-Desktop Habitats is [MIT licensed](LICENSE). Three.js 0.180.0 is bundled under its [MIT license](vendor/THREE-LICENSE.txt).
+```sh
+xcode-select --install
+sh wallpaper/install.sh
+```
 
-The rock, wood and sand textures come from Poly Haven under [CC0](https://polyhaven.com/license): [Rock Boulder Dry](https://polyhaven.com/a/rock_boulder_dry), [Rough Wood](https://polyhaven.com/a/rough_wood) and [Sand 01](https://polyhaven.com/a/sand_01). Reefscape's rock mesh, pore maps, coral texture and organism meshes are procedural, generated by the scripts in `tools/`.
+安装脚本会编译并安装 `~/Applications/Desktop Aquarium.app`，随后添加登录启动项。首次显示通常需要约 20 秒。
+
+菜单栏中的鱼形图标可用于：
+
+- 在“珊瑚海”和“水草溪流”之间切换
+- 向每块显示器上的鱼缸投喂
+- 暂停或继续动画
+- 退出应用
+
+动态壁纸位于桌面图标下方，不拦截点击或拖拽。应用支持多显示器，并会在桌面几乎完全被窗口遮挡、屏幕锁定、进入睡眠或开启低电量模式时停止渲染。
+
+卸载：
+
+```sh
+sh wallpaper/uninstall.sh
+```
+
+## 隐私
+
+应用只读取全局光标位置以驱动鱼群互动，并读取窗口的位置与尺寸以估算桌面可见面积。它不会读取窗口内容、记录光标轨迹或发送分析数据，也不申请辅助功能、输入监控或录屏权限。
+
+## 开源来源与许可证
+
+本项目基于 Chase Lean 的 [Desktop Habitats](https://github.com/chaseleantj/desktop-habitats) 改编，沿用了其 macOS 壁纸宿主、生态模拟与程序化场景实现，并重新设置了产品名称、默认体验和中文界面。
+
+项目代码遵循 [MIT License](LICENSE)。Three.js 的许可证见 [vendor/THREE-LICENSE.txt](vendor/THREE-LICENSE.txt)。岩石、木材与沙地纹理来自 Poly Haven，采用 CC0 许可；珊瑚场景的岩体、纹理与生物模型由仓库内工具程序化生成。

@@ -43,7 +43,7 @@ function announce() {
   for (const [index, portal] of portals.entries()) {
     const active = index === selected;
     portal.classList.toggle('is-active', active);
-    portal.setAttribute('aria-label', `${active ? 'Open' : 'Preview'} ${names[index]}`);
+    portal.setAttribute('aria-label', `${active ? '打开' : '预览'}${names[index]}`);
     if (active) portal.removeAttribute('role');
     else portal.setAttribute('role', 'button');
   }
